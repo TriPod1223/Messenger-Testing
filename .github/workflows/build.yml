@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><title>Азерот.Чат</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#f1e6cc;--card:#fbf3de;--ink:#2a1d0c;--mut:#7a6642;--gold:#9a6b12;--line:#c9b27a;--mine:#e6d19a;--hdr:#3b2a14;--hdrink:#f6d77a;--red:#8b1e1e;--blue:#1d4e89;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141c;--card:#1a2130;--ink:#ece4d0;--mut:#9a9078;--gold:#f0c24a;--line:#4a3c1e;--mine:#3a2f14;--hdr:#0a0d13;--hdrink:#f0c24a;--red:#e05a4f;--blue:#5aa5ff}}
+:root[data-theme="dark"]{--bg:#10141c;--card:#1a2130;--ink:#ece4d0;--mut:#9a9078;--gold:#f0c24a;--line:#4a3c1e;--mine:#3a2f14;--hdr:#0a0d13;--hdrink:#f0c24a;--red:#e05a4f;--blue:#5aa5ff}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.4 Georgia,"Times New Roman",serif;display:flex;flex-direction:column;max-width:560px;margin:auto}
+header{background:var(--hdr);color:var(--hdrink);padding:12px 14px;border-bottom:2px solid var(--gold);display:flex;align-items:center;gap:10px;letter-spacing:.04em}
+header b{flex:1;font-size:17px}header button{background:none;border:0;color:var(--hdrink);font-size:20px}
+main{flex:1;overflow-y:auto;padding:10px}
+nav{display:flex;background:var(--hdr);border-top:2px solid var(--gold)}
+nav button{flex:1;background:none;border:0;color:var(--mut);padding:8px 0;font:12px Georgia,serif}nav button.on{color:var(--hdrink)}nav span{display:block;font-size:19px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px;box-shadow:inset 0 0 0 2px var(--card),inset 0 0 0 3px var(--line)}
+.row{display:flex;gap:10px;align-items:center}.av{width:46px;height:46px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;font-size:22px;background:var(--hdr);flex:none}
+.grow{flex:1;min-width:0}.mut{color:var(--mut);font-size:13px}.ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msgs{display:flex;flex-direction:column;gap:6px}
+.m{max-width:84%;padding:7px 10px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.m.me{align-self:flex-end;background:var(--mine)}.m .n{font-size:12px;font-weight:bold;color:var(--gold)}
+.m.npc{border-left:3px solid var(--blue)}.m.npc .n{color:var(--blue)}
+.m.sys{align-self:center;max-width:94%;text-align:center;font-style:italic;color:var(--mut);background:none;border:1px dashed var(--line)}
+.m.roll{align-self:center;max-width:96%;background:var(--hdr);color:var(--hdrink);border-color:var(--gold)}.m.roll.bad{color:var(--red)}
+.bar{display:flex;gap:6px;padding:8px;background:var(--card);border-top:1px solid var(--line);flex-wrap:wrap}.bar input{flex:1;min-width:0}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;width:100%}
+.btn{background:var(--gold);color:#1a1000;border:0;border-radius:8px;padding:8px 12px;font:bold 14px Georgia,serif}.btn.alt{background:none;color:var(--gold);border:1px solid var(--gold)}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;text-align:center}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:4px 0}.stat b{font-size:17px;display:block}
+.track{height:14px;border-radius:7px;background:var(--bg);border:1px solid var(--line);overflow:hidden;margin:4px 0}.track i{display:block;height:100%;background:#a82a2a}
+.pill,.chip{display:inline-block;padding:2px 8px;border-radius:12px;border:1px solid var(--gold);color:var(--gold);font-size:12px;margin:2px}
+.chip{background:var(--bg);color:var(--ink);border-color:var(--line)}.chip.on{background:var(--red);color:#fff;border-color:var(--red)}
+.sk{display:flex;justify-content:space-between;padding:2px 0}.sk input{width:auto}
+.seg{display:flex;gap:6px}.seg>*{flex:1}label{display:block;margin:8px 0 3px;color:var(--mut);font-size:13px}h3{margin:0 0 6px}summary{color:var(--gold);padding:4px}
+</style></head><body>
+<header><button id="back" hidden>‹</button><b id="ttl"></b><button id="th">◐</button></header>
+<main id="main"></main><div id="bar" class="bar" hidden></div><nav id="nav"></nav>
+<script>
+const AB=["СИЛ","ЛОВ","ТЕЛ","ИНТ","МУД","ХАР"];
+// [имя, иконка, кость хитов, характеристика заклинаний, спасброски, описание]
+const CL=[["Варвар","⚔️",12,-1,[0,2],"Ярость: бонус к урону и сопротивление урону оружия. Защита без доспехов."],
+["Бард","🎻",8,5,[1,5],"Вдохновение барда, заклинания. Мастер слова и музыки."],
+["Жрец","✨",8,4,[4,5],"Божественный порядок, заклинания, исцеление и защита союзников."],
+["Друид","🌿",8,4,[3,4],"Первобытный порядок, магия природы, Дикий облик."],
+["Воин","🛡️",10,-1,[0,2],"Второе дыхание, боевой стиль, мастер любого оружия."],
+["Монах","🥋",8,4,[0,1],"Боевые искусства, защита без доспехов, очки фокуса."],
+["Паладин","🔱",10,5,[4,5],"Возложение рук, заклинания, священная клятва."],
+["Следопыт","🏹",10,4,[0,1],"Избранный враг, заклинания, выслеживание."],
+["Плут","🗡️",8,-1,[1,3],"Скрытая атака, воровской жаргон, коварное действие."],
+["Чародей","🔥",6,5,[2,5],"Врождённое колдовство, метамагия, магия в крови."],
+["Колдун","👁️",8,5,[4,5],"Магия договора, воззвания, покровитель."],
+["Волшебник","🔮",6,3,[3,4],"Книга заклинаний, магическое восстановление, ритуалы."]];
+const SP=[["Человек",30,"Находчивость: героическое вдохновение после долгого отдыха. Умелый."],["Эльф",30,"Тёмное зрение, чувства фей, транс."],["Дварф",30,"Тёмное зрение, стойкость (+1 ХП за уровень)."],["Полурослик",30,"Удача (перебросок 1), храбрость, проворство."],["Гном",30,"Тёмное зрение, хитрость гнома."],["Орк",30,"Прилив адреналина, тёмное зрение."],["Тифлинг",30,"Наследие бездны, тёмное зрение."],["Драконорождённый",30,"Дыхательное оружие, сопротивление, полёт с 5 уровня."],["Голиаф",35,"Великанское наследие, большая форма."],["Аасимар",30,"Небесное сопротивление, исцеляющие руки, свет."]];
+const SK="Атлетика:0,Акробатика:1,Ловкость рук:1,Скрытность:1,Магия:3,История:3,Расследование:3,Природа:3,Религия:3,Уход за животными:4,Проницательность:4,Медицина:4,Восприятие:4,Выживание:4,Обман:5,Запугивание:5,Выступление:5,Убеждение:5".split(",").map(x=>x.split(":"));
+const CD="Ослеплён,Очарован,Оглох,Истощён,Испуган,Схвачен,Недееспособен,Невидим,Парализован,Окаменён,Отравлен,Лежит,Скован,Ошеломлён,Без сознания".split(",");
+const K={8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9};
+const LOC0=[{n:"Таверна «Пьяный гном»",i:"🍺",npc:["Борин, трактирщик","Загадочный незнакомец"],m:"Тёплый свет очага. Пахнет элем и жареным мясом."},{n:"Элвиннский лес",i:"🌲",npc:["Волк-вожак","Егерь Томас"],m:"Туман стелется между сосен. Где-то воет волк."},{n:"Руины Каражана",i:"🏰",npc:["Призрачный дворецкий","Страж башни"],m:"Пыльные залы хранят эхо былых балов."}];
+const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])),R=n=>1+Math.floor(Math.random()*n),md=v=>Math.floor((v-10)/2),sg=n=>(n>=0?"+":"")+n,pb=l=>Math.ceil(l/4)+1;
+function load(){try{return JSON.parse(localStorage.getItem("az2"))}catch(e){return null}}
+function save(){try{localStorage.setItem("az2",JSON.stringify(S))}catch(e){}}
+let S=load()||{me:null,chats:{},loc:LOC0,room:"",link:"net",dc:0,mode:0,ini:{}};
+S.loc.forEach(l=>{if(!S.chats[l.n])S.chats[l.n]=[{k:"sys",t:l.m||"Новая локация."}]});
+let tab="chats",cur=null,barFor=null,ch=null,ws=null;
+function recv(d){if(!S.loc.find(x=>x.n==d.c))S.loc.push({n:d.c,i:"📍",npc:[],m:""});(S.chats[d.c]||(S.chats[d.c]=[])).push(d.m);save();render()}
+function link(){if(ch)ch.close();ch=null;if(ws)ws.close();ws=null;if(!S.room)return;if(S.link=="net"&&window.BroadcastChannel){ch=new BroadcastChannel("az-"+S.room);ch.onmessage=e=>recv(e.data)}else if(S.link=="lan"&&S.host){try{ws=new WebSocket("ws://"+S.host+":8080/?room="+encodeURIComponent(S.room));ws.onmessage=e=>recv(JSON.parse(e.data))}catch(e){}}}
+function post(m){S.chats[cur].push(m);const p={c:cur,m:{...m,me:0}};if(ch)ch.postMessage(p);if(ws&&ws.readyState==1)ws.send(JSON.stringify(p));save();render()}
+function D(){const m=S.me,c=CL[m.c],a=m.ab,l=m.lv,cm=md(a[2]);return{c,a,l,p:pb(l),mhp:Math.max(1,Math.round(c[2]+cm+(l-1)*(c[2]/2+1+cm)+(m.sp==2?l:0))),ac:m.ac||10+md(a[1])}}
+function RLs(){const{c,a,p}=D(),m=S.me,o=[];
+AB.forEach((n,i)=>o.push(["Проверки","Проверка "+n,md(a[i])]));
+AB.forEach((n,i)=>o.push(["Спасброски","Спасбросок "+n,md(a[i])+(c[4].includes(i)?p:0)]));
+SK.forEach((s,i)=>o.push(["Навыки",s[0],md(a[s[1]])+(m.pr.includes(i)?p:0)]));
+o.push(["Бой","Инициатива",md(a[1])],["Бой","Атака (СИЛ)",md(a[0])+p],["Бой","Атака (ЛОВ)",md(a[1])+p]);
+if(c[3]>=0)o.push(["Бой","Атака заклинанием",md(a[c[3]])+p]);return o}
+function d20(label,b){const m=S.mode||0,x=[R(20),R(20)],r=m>0?Math.max(...x):m<0?Math.min(...x):x[0],t=r+b,dc=S.dc||0;
+const v=r==20?" ✦ КРИТ":r==1?" ✖ ПРОВАЛ":dc?(t>=dc?" ✔ успех":" ✖ неудача"):"";
+post({k:"roll",w:S.me.n,t:`${S.me.n}: ${label} ${sg(b)} — d20(${m?x.join("/"):x[0]}${m>0?" преим.":m<0?" помеха":""}) = ${t}${dc?" vs СЛ "+dc:""}${v}`,bad:r==1||(dc&&r<20&&t<dc)});return t}
+function doRoll(){const x=RLs()[$("rl").value],t=d20(x[1],x[2]);if(x[1]=="Инициатива")addIni(S.me.n,t)}
+function dice(e){const m=e.replace(/\s/g,"").match(/^(\d*)d(\d+)([+-]\d+)?$/i);if(!m)return 0;const n=+m[1]||1,s=+m[2],b=+(m[3]||0),r=Array.from({length:n},()=>R(s)),t=r.reduce((x,y)=>x+y,0)+b;post({k:"roll",w:S.me.n,t:`${S.me.n}: ${n}d${s}${b?sg(b):""} → [${r.join(", ")}] = ${t}`});return 1}
+function ds(){const r=R(20);post({k:"roll",w:S.me.n,t:`${S.me.n}: спасбросок от смерти d20(${r}) — ${r==20?"✦ 1 ХП, вы в сознании":r==1?"✖✖ два провала":r>=10?"✔ успех":"✖ провал"}`,bad:r<10})}
+function addIni(n,v){const T=S.ini[cur]||(S.ini[cur]={l:[],t:0});T.l=T.l.filter(x=>x.n!=n);T.l.push({n,v});T.l.sort((a,b)=>b.v-a.v);save();render()}
+function npcIni(){const a=$("as").value;if(a.slice(0,4)!="NPC:")return;const n=a.slice(5),v=R(20);post({k:"roll",w:n,t:`${n}: инициатива d20 = ${v}`});addIni(n,v)}
+function nt(){const T=S.ini[cur];T.t=(T.t+1)%T.l.length;post({k:"sys",t:"▶ Ход: "+T.l[T.t].n})}
+function send(){const t=$("tx").value.trim();if(!t)return;$("tx").value="";if(/^\/r /i.test(t)){if(!dice(t.slice(3)))post({k:"sys",t:"Формат: /r 2d6+3"});return}const a=$("as").value;if(a=="pc")post({k:"pc",w:S.me.n,t});else if(a=="sys")post({k:"sys",t});else post({k:"npc",w:a.slice(5),t})}
+function op(i){cur=S.loc[i].n;barFor=null;render()}
+function addLoc(){const n=$("ln").value.trim();if(!n)return;if(!S.loc.find(x=>x.n==n)){S.loc.push({n,i:"📍",npc:$("lnpc").value.split(",").map(x=>x.trim()).filter(Boolean),m:""});S.chats[n]=[{k:"sys",t:"Вы прибыли: "+n}]}save();render()}
+function addIt(){const v=$("it").value.trim();if(!v)return;S.me.inv.push(v);save();render()}
+function hp(s){const v=+$("hv").value||0;S.me.hp=Math.max(0,Math.min(D().mhp,S.me.hp+s*v));save();render()}
+function sr(){const{c,a,mhp}=D();S.me.hp=Math.min(mhp,S.me.hp+Math.max(0,R(c[2])+md(a[2])));save();render()}
+function lr(){S.me.hp=D().mhp;save();render()}
+function tg(k,i){const a=S.me[k],j=a.indexOf(i);j<0?a.push(i):a.splice(j,1);save();render()}
+function lvl(d){S.me.lv=Math.max(1,Math.min(20,S.me.lv+d));S.me.hp=Math.min(S.me.hp,D().mhp);save();render()}
+function sc(i,d){const C=cr,v=C.bs[i]+d,left=27-C.bs.reduce((s,x)=>s+K[x],0);if(v<8||v>15||(d>0&&K[v]-K[C.bs[i]]>left))return;C.bs[i]=v;render()}
+function ok(){if(!cr.nm.trim())return;S.me={n:cr.nm.trim(),sp:cr.sp,c:cr.c,lv:cr.lv,ab:cr.bs.map((v,i)=>v+(cr.b2==i?2:0)+(cr.b1==i&&cr.b1!=cr.b2?1:0)),pr:[],cd:[],inv:[],g:10,hp:0,insp:0};S.me.hp=D().mhp;save();tab="chats";render()}
+let cr={nm:"",sp:0,c:4,lv:1,bs:[8,8,8,8,8,8],b2:0,b1:1};
+function create(m){const left=27-cr.bs.reduce((s,x)=>s+K[x],0),opt=(a,s)=>a.map((x,i)=>`<option value="${i}" ${i==s?"selected":""}>${x}</option>`).join("");
+m.innerHTML=`<div class="card"><label>Имя героя</label><input value="${esc(cr.nm)}" oninput="cr.nm=this.value">
+<label>Вид</label><select onchange="cr.sp=+this.value;render()">${opt(SP.map(x=>x[0]),cr.sp)}</select><div class="mut">${SP[cr.sp][2]}</div>
+<label>Класс</label><select onchange="cr.c=+this.value;render()">${opt(CL.map(x=>x[1]+" "+x[0]),cr.c)}</select><div class="mut">Кость хитов d${CL[cr.c][2]}, спасброски: ${CL[cr.c][4].map(i=>AB[i]).join(", ")}. ${CL[cr.c][5]}</div>
+<label>Уровень</label><select onchange="cr.lv=+this.value;render()">${opt(Array.from({length:20},(_,i)=>i+1),cr.lv-1).replace(/value="(\d+)"/g,(_,x)=>`value="${+x+1}"`)}</select>
+<label>Предыстория: +2 к / +1 к</label><div class="seg"><select onchange="cr.b2=+this.value;render()">${opt(AB,cr.b2)}</select><select onchange="cr.b1=+this.value;render()">${opt(AB,cr.b1)}</select></div>
+<label>Покупка очков (27): осталось ${left}</label><div class="g6">${AB.map((x,i)=>{const f=cr.bs[i]+(cr.b2==i?2:0)+(cr.b1==i&&cr.b1!=cr.b2?1:0);return`<div class="stat"><span class="mut">${x}</span><b>${f}</b><span class="mut">${sg(md(f))}</span><br><button class="btn alt" style="padding:2px 8px" onclick="sc(${i},1)">+</button><button class="btn alt" style="padding:2px 8px" onclick="sc(${i},-1)">−</button></div>`}).join("")}</div>
+<br><button class="btn" style="width:100%" onclick="ok()">В путь!</button></div>`}
+function hero(m){const{c,a,l,p,mhp,ac}=D(),me=S.me,sp=SP[me.sp];me.hp=Math.min(me.hp,mhp);
+m.innerHTML=`<div class="card"><div class="row"><div class="av">${c[1]}</div><div class="grow"><h3>${esc(me.n)}</h3><span class="pill">${sp[0]}</span><span class="pill">${c[0]} ${l}</span></div><button class="btn alt" onclick="lvl(-1)">−</button><button class="btn alt" onclick="lvl(1)">＋</button></div>
+<div class="row" style="margin-top:8px"><b>❤ ${me.hp}/${mhp}</b><span class="grow"></span><span class="mut">КД</span><input type="number" style="width:64px" value="${ac}" onchange="S.me.ac=+this.value;save()"></div><div class="track"><i style="width:${me.hp/mhp*100}%"></i></div>
+<div class="seg"><input id="hv" type="number" placeholder="число"><button class="btn" onclick="hp(-1)">Урон</button><button class="btn alt" onclick="hp(1)">Лечение</button></div>
+<div class="seg" style="margin-top:6px"><button class="btn alt" onclick="sr()">Короткий отдых</button><button class="btn alt" onclick="lr()">Долгий отдых</button><button class="btn ${me.insp?"":"alt"}" onclick="S.me.insp=+!S.me.insp;save();render()">★ Вдохн.</button></div>
+<p class="mut">Мастерство ${sg(p)} · Скорость ${sp[1]} фт · Инициатива ${sg(md(a[1]))} · Пассивное восприятие ${10+md(a[4])+(me.pr.includes(12)?p:0)}${c[3]>=0?` · СЛ заклинаний ${8+p+md(a[c[3]])}`:""}</p></div>
+<div class="card"><div class="g6">${AB.map((x,i)=>`<div class="stat"><span class="mut">${x}${c[4].includes(i)?" ●":""}</span><b>${a[i]}</b><span class="mut">${sg(md(a[i]))}</span></div>`).join("")}</div><div class="mut">● — владение спасброском</div></div>
+<div class="card"><h3>Навыки</h3>${SK.map((s,i)=>`<label class="sk"><span><input type="checkbox" ${me.pr.includes(i)?"checked":""} onchange="tg('pr',${i})"> ${s[0]} <span class="mut">(${AB[s[1]]})</span></span><b>${sg(md(a[s[1]])+(me.pr.includes(i)?p:0))}</b></label>`).join("")}</div>
+<div class="card"><h3>Состояния</h3>${CD.map((x,i)=>`<span class="chip ${me.cd.includes(i)?"on":""}" onclick="tg('cd',${i})">${x}</span>`).join("")}</div>
+<div class="card"><h3>Особенности</h3><p>${c[5]}</p><p class="mut">${sp[2]}</p></div>
+<div class="card"><b>🎒 Инвентарь</b> <span class="pill">💰 ${me.g} зм</span>${me.inv.map((x,i)=>`<div class="row" style="margin-top:6px"><span class="grow">${esc(x)}</span><button class="btn alt" onclick="S.me.inv.splice(${i},1);save();render()">✕</button></div>`).join("")}
+<div class="row" style="margin-top:8px"><input id="it" placeholder="Предмет"><button class="btn" onclick="addIt()">+</button></div><div class="seg" style="margin-top:6px"><button class="btn alt" onclick="S.me.g+=10;save();render()">+10 зм</button><button class="btn alt" onclick="S.me.g=Math.max(0,S.me.g-10);save();render()">−10 зм</button></div></div>
+<button class="btn alt" onclick="if(confirm('Удалить героя?')){S.me=null;save();render()}">Пересоздать героя</button>`}
+function render(){const m=$("main"),bar=$("bar");$("back").hidden=!cur;bar.hidden=!cur;
+$("nav").innerHTML=[["chats","💬","Чаты"],["me","🛡️","Герой"],["ref","📜","Правила"],["con","📡","Связь"]].map(x=>`<button class="${tab==x[0]&&!cur?"on":""}" onclick="cur=null;barFor=null;tab='${x[0]}';render()"><span>${x[1]}</span>${x[2]}</button>`).join("");
+if(!S.me&&(tab=="chats"||tab=="me")){cur=null;$("ttl").textContent="Создание героя";return create(m)}
+if(cur){const l=S.loc.find(x=>x.n==cur)||{i:"📍",npc:[]},T=S.ini[cur];$("ttl").textContent=l.i+" "+cur;
+m.innerHTML=(T&&T.l.length?`<div class="card"><b>⚔️ Инициатива</b><br>${T.l.map((x,i)=>`<span class="chip ${i==T.t?"on":""}">${esc(x.n)} ${x.v}</span>`).join("")}<div class="seg" style="margin-top:6px"><button class="btn alt" onclick="nt()">▶ Следующий ход</button><button class="btn alt" onclick="delete S.ini[cur];save();render()">Конец боя</button></div></div>`:"")+
+`<div class="msgs">${S.chats[cur].map(x=>x.k=="sys"?`<div class="m sys">${esc(x.t)}</div>`:x.k=="roll"?`<div class="m roll ${x.bad?"bad":""}">🎲 ${esc(x.t)}</div>`:`<div class="m ${x.k} ${x.me!==0&&x.k=="pc"?"me":""}"><div class="n">${esc(x.w)}</div>${esc(x.t)}</div>`).join("")}</div>`;
+if(barFor!==cur){barFor=cur;let g="",o="";RLs().forEach((x,i)=>{if(x[0]!=g){if(g)o+="</optgroup>";o+=`<optgroup label="${x[0]}">`;g=x[0]}o+=`<option value="${i}">${x[1]} ${sg(x[2])}</option>`});o+="</optgroup>";
+const so=(a,v)=>a.map(x=>`<option value="${x[0]}" ${x[0]==v?"selected":""}>${x[1]}</option>`).join("");
+bar.innerHTML=`<select id="as"><option value="pc">Как ${esc(S.me.n)}</option>${l.npc.map(n=>`<option>NPC: ${esc(n)}</option>`).join("")}<option value="sys">Рассказчик</option></select>
+<input id="tx" placeholder="Сообщение или /r 2d6+3" onkeydown="if(event.key=='Enter')send()"><button class="btn" onclick="send()">➤</button>
+<details style="width:100%"><summary>🎲 Броски и кубики</summary><select id="rl">${o}</select>
+<div class="seg" style="margin:6px 0"><select onchange="S.mode=+this.value;save()">${so([[0,"Обычный"],[1,"Преимущество"],[-1,"Помеха"]],S.mode||0)}</select><select onchange="S.dc=+this.value;save()">${so([[0,"Без СЛ"],[8,"СЛ 8"],[10,"СЛ 10"],[12,"СЛ 12"],[15,"СЛ 15"],[18,"СЛ 18"],[20,"СЛ 20"]],S.dc||0)}</select><button class="btn" onclick="doRoll()">Бросить</button></div>
+<div class="seg">${[4,6,8,10,12,20,100].map(d=>`<button class="btn alt" style="padding:8px 2px" onclick="dice('d${d}')">d${d}</button>`).join("")}</div>
+<div class="seg" style="margin-top:6px"><button class="btn alt" onclick="ds()">☠ Смерть</button><button class="btn alt" onclick="npcIni()">NPC ⚡ иниц.</button></div></details>`}
+m.scrollTop=m.scrollHeight;return}
+$("bar").innerHTML="";barFor=null;
+if(tab=="chats"){$("ttl").textContent="Локации";m.innerHTML=S.loc.map((l,i)=>{const a=S.chats[l.n],z=a[a.length-1];return`<div class="card row" onclick="op(${i})"><div class="av">${l.i}</div><div class="grow"><b>${esc(l.n)}</b><div class="mut ell">${esc(z?z.t:"")}</div></div><span class="pill">${a.length}</span></div>`}).join("")+`<div class="card"><b>＋ Новая локация</b><input id="ln" placeholder="Название" style="margin-top:6px"><input id="lnpc" placeholder="NPC через запятую" style="margin-top:6px"><br><br><button class="btn" onclick="addLoc()">Создать</button></div>`}
+else if(tab=="me")hero(m);
+else if(tab=="ref"){$("ttl").textContent="Правила (D&D 2024)";m.innerHTML=`<div class="card mut"><b>Основа:</b> d20 + модификатор характеристики (+ бонус мастерства, если владеете) против Сложности (СЛ). СЛ 10 — лёгкая, 15 — средняя, 20 — трудная. Преимущество — два d20, берётся больший; помеха — меньший. 20 — критический успех, 1 — провал. Бонус мастерства: +2 (ур. 1–4), +3 (5–8), +4 (9–12), +5 (13–16), +6 (17–20). ★ героическое вдохновение даёт
